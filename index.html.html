@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="vi"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hứng Rau Củ</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+  body { font-family: 'Fredoka', sans-serif; }
+  .game-stage {
+    height: calc(100 * min(var(--vh, 1vh), 1vh));
+    min-height: 480px;
+  }
+  .veg {
+    position: absolute;
+    font-size: 3.6rem;
+    line-height: 1;
+    will-change: transform;
+    user-select: none;
+    pointer-events: none;
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,0.15));
+  }
+  .basket {
+    position: absolute;
+    bottom: 10px;
+    font-size: 5rem;
+    line-height: 1;
+    transform: translateX(-50%);
+    user-select: none;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,0.25));
+    transition: transform 0.05s linear;
+  }
+  .pop { animation: pop 0.3s ease forwards; }
+  @keyframes pop {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+  .fade-in { animation: fadeIn 0.4s ease both; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .heart { transition: transform 0.2s ease, opacity 0.2s ease; }
+  .heart.lost { transform: scale(0.6); opacity: 0.25; }
+  .shake { animation: shake 0.3s ease; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+</style>
+  
+  
+ </head>
+ <body data-template-id="__page-root" class="game-stage w-full overflow-hidden bg-green-50" style="background: linear-gradient(90deg, rgb(187, 247, 208), rgb(254, 249, 195), rgb(217, 249, 157));"><!-- ===== START SCREEN ===== -->
+  <section id="start-screen" class="absolute inset-0 z-20 flex items-center justify-center p-6">
+   <div class="fade-in max-w-md w-full text-center bg-white/85 backdrop-blur-sm rounded-3xl shadow-2xl px-8 py-10 border-4 border-green-200">
+    <div class="text-6xl mb-3">
+     🧺🥕🥦
+    </div>
+    <h1 data-template-id="game-title" class="canva-text font-bold text-green-700 mb-3" style="color: rgb(21, 128, 61); font-weight: 700; font-style: normal; font-size: 36px;">Hứng Rau Củ</h1>
+    <p data-template-id="game-instructions" class="canva-text text-green-900/80 mb-7 leading-relaxed" style="color: rgb(22, 101, 52); font-weight: 400; font-style: normal; font-size: 17px;">Di chuyển giỏ tre qua lại để hứng rau củ rơi xuống! Mỗi quả hứng được 1 điểm. Bạn chỉ được bỏ lỡ tối đa 3 lần. Dùng chuột, chạm hoặc phím mũi tên ← →.</p><button data-template-id="start-button" id="start-button" type="button" class="canva-button inline-flex items-center gap-2 px-8 py-3 rounded-full bg-green-600 text-white font-semibold shadow-lg hover:bg-green-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-300 transition" style="background: rgb(22, 163, 74); color: rgb(255, 255, 255); font-weight: 600;"> <i data-lucide="play"></i><span data-template-id="start-button-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 18px;">Chơi ngay</span> </button>
+   </div>
+  </section><!-- ===== GAME SCREEN ===== -->
+  <section id="game-screen" class="absolute inset-0 z-10 hidden flex flex-col">
+   <header data-template-id="hud" class="canva-header w-full px-4 py-3 flex items-center justify-between gap-3 text-white shadow-md" style="background: rgb(21, 128, 61);">
+    <div class="flex flex-col items-start"><span data-template-id="score-label" class="canva-text text-xs opacity-90 leading-none" style="color: rgb(220, 252, 231); font-weight: 500; font-style: normal; font-size: 13px;">Điểm</span> <span id="score-value" class="font-bold text-2xl leading-tight" aria-live="polite">0</span>
+    </div><button id="sound-button" type="button" aria-label="Bật/tắt âm thanh" class="shrink-0 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40 transition"> <i id="sound-on-icon" data-lucide="volume-2"></i> <i id="sound-off-icon" data-lucide="volume-x" class="hidden"></i> </button>
+    <div class="flex flex-col items-end"><span data-template-id="lives-label" class="canva-text text-xs opacity-90 leading-none" style="color: rgb(220, 252, 231); font-weight: 500; font-style: normal; font-size: 13px;">Mạng còn lại</span> <span id="lives-value" class="font-bold text-2xl leading-tight flex gap-0.5" aria-live="polite"></span>
+    </div>
+   </header>
+   <div data-template-id="play-area" id="play-area" class="canva-section relative flex-1 w-full overflow-hidden touch-none cursor-pointer" style="background: linear-gradient(90deg, rgb(224, 242, 254), rgb(254, 249, 195));">
+    <div id="basket" class="basket" style="left:50%;">
+     🧺
+    </div>
+   </div>
+  </section><!-- ===== GAME OVER SCREEN ===== -->
+  <section id="over-screen" class="absolute inset-0 z-20 hidden flex items-center justify-center p-6">
+   <div class="fade-in max-w-md w-full text-center bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl px-8 py-10 border-4 border-amber-200">
+    <div class="text-6xl mb-3">
+     🏁
+    </div>
+    <h2 data-template-id="over-title" class="canva-text font-bold text-amber-700 mb-2" style="color: rgb(180, 83, 9); font-weight: 700; font-style: normal; font-size: 27px;">Game Over</h2>
+    <p id="over-reason" class="text-green-900/70 mb-5 text-lg" aria-live="polite"></p>
+    <div class="mb-7"><span data-template-id="final-score-label" class="canva-text block text-green-900/70" style="color: rgb(22, 101, 52); font-weight: 500; font-style: normal; font-size: 16px;">Tổng điểm của bạn</span> <span id="final-score-value" class="block font-bold text-5xl text-green-700">0</span>
+    </div><button data-template-id="restart-button" id="restart-button" type="button" class="canva-button inline-flex items-center gap-2 px-8 py-3 rounded-full bg-green-600 text-white font-semibold shadow-lg hover:bg-green-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-300 transition" style="background: rgb(22, 163, 74); color: rgb(255, 255, 255); font-weight: 600;"> <i data-lucide="rotate-ccw"></i><span data-template-id="restart-button-text" style="color: rgb(255, 255, 255); font-weight: 600; font-style: normal; font-size: 18px;">Chơi lại</span> </button>
+   </div>
+  </section>
+  
+  <script>
+    lucide.createIcons();
+
+    const VEG_EMOJIS = ['🥕','🥦','🍅','🌽','🥒','🍆','🫑','🥬','🧄','🧅','🥔','🌶️'];
+    const MAX_LIVES = 3;
+    const POINTS_PER_VEG = 1;
+    const BASE_VEG_SPEED = 95;       // gentle starting fall speed (px/s)
+    const SPEED_PER_CATCH = 4;       // gradual difficulty per catch
+    const SPEED_PER_SECOND = 1.2;    // gradual difficulty over time
+    const MAX_VEG_SPEED = 320;       // cap so it stays fair for kids
+    const BASE_SPAWN = 5000;         // ms between vegetables initially (time to move)
+    const MIN_SPAWN = 3000;           // fastest spawn interval
+
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen  = document.getElementById('game-screen');
+    const overScreen  = document.getElementById('over-screen');
+    const playArea    = document.getElementById('play-area');
+    const basket      = document.getElementById('basket');
+
+    const scoreValue  = document.getElementById('score-value');
+    const livesValue  = document.getElementById('lives-value');
+    const overReason  = document.getElementById('over-reason');
+    const finalScore  = document.getElementById('final-score-value');
+
+    let state = {
+      running: false,
+      score: 0,
+      lives: MAX_LIVES,
+      basketX: 0,
+      veggies: [],
+      lastSpawn: 0,
+      rafId: null,
+      lastFrame: 0,
+      elapsed: 0,          // seconds since start (for difficulty ramp)
+      vegetablesCaught: 0,
+    };
+
+    /* ===================== AUDIO (Web Audio API) ===================== */
+    let audioCtx = null;
+    let musicGain = null;
+    let soundOn = true;
+    let musicTimer = null;
+    let musicStep = 0;
+    // gentle cheerful loop (C major pentatonic) in Hz
+    const MELODY = [523.25, 659.25, 783.99, 659.25, 587.33, 783.99, 659.25, 523.25];
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        musicGain = audioCtx.createGain();
+        musicGain.gain.value = 0.0;
+        musicGain.connect(audioCtx.destination);
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, dur, type, vol, time) {
+      if (!audioCtx || !soundOn) return;
+      const t = time || audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + dur + 0.05);
+    }
+
+    function playCatch() {
+      // bright rising two-note chime
+      playTone(880, 0.12, 'sine', 0.25);
+      playTone(1318.5, 0.16, 'sine', 0.22, audioCtx.currentTime + 0.09);
+    }
+
+    function playMiss() {
+      // soft low buzz
+      playTone(180, 0.28, 'square', 0.18);
+    }
+
+    function startMusic() {
+      if (!audioCtx) return;
+      stopMusic();
+      musicStep = 0;
+      musicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      musicGain.gain.setValueAtTime(soundOn ? 0.14 : 0, audioCtx.currentTime);
+      musicTimer = setInterval(() => {
+        if (!audioCtx || !soundOn) return;
+        const note = MELODY[musicStep % MELODY.length];
+        const t = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = note;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.12, t + 0.05);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.42);
+        osc.connect(g).connect(musicGain);
+        osc.start(t);
+        osc.stop(t + 0.5);
+        musicStep++;
+      }, 380);
+    }
+
+    function stopMusic() {
+      if (musicTimer) { clearInterval(musicTimer); musicTimer = null; }
+    }
+
+    const soundBtn = document.getElementById('sound-button');
+    const soundOnIcon = document.getElementById('sound-on-icon');
+    const soundOffIcon = document.getElementById('sound-off-icon');
+    soundBtn.addEventListener('click', () => {
+      soundOn = !soundOn;
+      soundOnIcon.classList.toggle('hidden', !soundOn);
+      soundOffIcon.classList.toggle('hidden', soundOn);
+      if (musicGain && audioCtx) {
+        musicGain.gain.setValueAtTime(soundOn ? 0.14 : 0, audioCtx.currentTime);
+      }
+    });
+
+    /* ===================== HUD ===================== */
+    function renderLives() {
+      let hearts = '';
+      for (let i = 0; i < MAX_LIVES; i++) {
+        const lost = i >= state.lives ? ' lost' : '';
+        hearts += '<span class="heart' + lost + '">❤️</span>';
+      }
+      livesValue.innerHTML = hearts;
+    }
+
+    function showScreen(which) {
+      startScreen.classList.toggle('hidden', which !== 'start');
+      gameScreen.classList.toggle('hidden', which !== 'game');
+      overScreen.classList.toggle('hidden', which !== 'over');
+    }
+
+    function clearVeggies() {
+      state.veggies.forEach(v => v.el.remove());
+      state.veggies = [];
+    }
+
+    function currentSpeed() {
+      const s = BASE_VEG_SPEED + state.vegetablesCaught * SPEED_PER_CATCH + state.elapsed * SPEED_PER_SECOND;
+      return Math.min(MAX_VEG_SPEED, s);
+    }
+
+    function currentSpawnInterval() {
+      const reduce = state.vegetablesCaught * 30 + state.elapsed * 8;
+      return Math.max(MIN_SPAWN, BASE_SPAWN - reduce);
+    }
+
+    function startGame() {
+      ensureAudio();
+      startMusic();
+
+      clearVeggies();
+      state.running = true;
+      state.score = 0;
+      state.lives = MAX_LIVES;
+      state.vegetablesCaught = 0;
+      state.elapsed = 0;
+      state.lastSpawn = 0;
+
+      scoreValue.textContent = '0';
+      renderLives();
+      showScreen('game');
+
+      const rect = playArea.getBoundingClientRect();
+      state.basketX = rect.width / 2;
+      basket.style.left = state.basketX + 'px';
+
+      cancelAnimationFrame(state.rafId);
+      state.lastFrame = performance.now();
+      state.rafId = requestAnimationFrame(loop);
+    }
+
+    function spawnVeg() {
+      const rect = playArea.getBoundingClientRect();
+      const el = document.createElement('div');
+      el.className = 'veg';
+      el.textContent = VEG_EMOJIS[Math.floor(Math.random() * VEG_EMOJIS.length)];
+      const x = 28 + Math.random() * Math.max(1, rect.width - 56);
+      el.style.left = x + 'px';
+      el.style.top = '-40px';
+      playArea.appendChild(el);
+      state.veggies.push({
+        el, x, y: -40,
+        speed: currentSpeed() + Math.random() * 12,
+        caught: false,
+      });
+    }
+
+    function loop(now) {
+      if (!state.running) return;
+      const dt = Math.min(0.05, (now - state.lastFrame) / 1000);
+      state.lastFrame = now;
+      state.elapsed += dt;
+
+      if (now - state.lastSpawn > currentSpawnInterval()) {
+        spawnVeg();
+        state.lastSpawn = now;
+      }
+
+      const rect = playArea.getBoundingClientRect();
+      const basketTop = rect.height - 70;
+      const catchHalfWidth = 50;
+
+      for (let i = state.veggies.length - 1; i >= 0; i--) {
+        const v = state.veggies[i];
+        v.y += v.speed * dt;
+        v.el.style.transform = 'translateY(' + v.y + 'px)';
+
+        if (!v.caught && v.y >= basketTop - 30 && v.y <= rect.height - 6) {
+          if (Math.abs(v.x - state.basketX) < catchHalfWidth) {
+            v.caught = true;
+            v.el.classList.add('pop');
+            setTimeout(() => v.el.remove(), 300);
+            state.veggies.splice(i, 1);
+            state.score += POINTS_PER_VEG;
+            state.vegetablesCaught++;
+            scoreValue.textContent = String(state.score);
+            playCatch();
+            continue;
+          }
+        }
+
+        if (v.y > rect.height + 10) {
+          v.el.remove();
+          state.veggies.splice(i, 1);
+          loseLife();
+          if (!state.running) return;
+        }
+      }
+
+      state.rafId = requestAnimationFrame(loop);
+    }
+
+    function loseLife() {
+      state.lives--;
+      renderLives();
+      playMiss();
+      gameScreen.classList.add('shake');
+      setTimeout(() => gameScreen.classList.remove('shake'), 320);
+      if (state.lives <= 0) endGame();
+    }
+
+    function endGame() {
+      state.running = false;
+      cancelAnimationFrame(state.rafId);
+      stopMusic();
+      clearVeggies();
+      finalScore.textContent = String(state.score);
+      overReason.textContent = 'Bạn đã bỏ lỡ 3 lần!';
+      showScreen('over');
+    }
+
+    /* ===================== Controls ===================== */
+    function moveBasketTo(clientX) {
+      if (!state.running) return;
+      const rect = playArea.getBoundingClientRect();
+      let x = clientX - rect.left;
+      x = Math.max(40, Math.min(rect.width - 40, x));
+      state.basketX = x;
+      basket.style.left = x + 'px';
+    }
+
+    playArea.addEventListener('mousemove', e => moveBasketTo(e.clientX));
+    playArea.addEventListener('touchmove', e => {
+      if (e.touches[0]) moveBasketTo(e.touches[0].clientX);
+      e.preventDefault();
+    }, { passive: false });
+    playArea.addEventListener('touchstart', e => {
+      if (e.touches[0]) moveBasketTo(e.touches[0].clientX);
+    }, { passive: true });
+
+    document.addEventListener('keydown', e => {
+      if (!state.running) return;
+      const step = 44;
+      const rect = playArea.getBoundingClientRect();
+      if (e.key === 'ArrowLeft')  { state.basketX = Math.max(40, state.basketX - step); basket.style.left = state.basketX + 'px'; }
+      if (e.key === 'ArrowRight') { state.basketX = Math.min(rect.width - 40, state.basketX + step); basket.style.left = state.basketX + 'px'; }
+    });
+
+    document.getElementById('start-button').addEventListener('click', startGame);
+    document.getElementById('restart-button').addEventListener('click', startGame);
+
+    renderLives();
+  </script>
+ </body></html>
